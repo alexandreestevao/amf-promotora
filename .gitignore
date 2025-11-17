@@ -1,0 +1,46 @@
+## IntelliJ IDEA
+.idea/
+*.iws
+*.iml
+*.ipr
+
+## Maven
+target/
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.versionsBackup
+pom.xml.next
+release.properties
+
+## Logs
+*.log
+
+## OS generated files
+.DS_Store
+Thumbs.db
+
+## Java
+*.class
+*.jar
+*.war
+*.ear
+*.jpi
+
+## VSCode (caso use)
+.vscode/
+
+## Environment files
+*.env
+
+## Node (caso use no frontend)
+node_modules/
+
+## Backup files
+*.bak
+*.tmp
+
+## Docker
+*.pid
+
+## Tests temp
+hs_err_pid*
