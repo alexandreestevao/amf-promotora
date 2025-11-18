@@ -23,7 +23,6 @@ public class TransactionController {
         this.transactionService = transactionService;
     }
 
-    // Transferência entre contas
     @PostMapping("/transfer")
     public ResponseEntity<Transaction> transfer(@Valid @RequestBody TransactionDTO dto) {
         Transaction tx = transactionService.transfer(
@@ -35,7 +34,6 @@ public class TransactionController {
         return ResponseEntity.created(URI.create("/api/v1/transactions/" + tx.getId())).body(tx);
     }
 
-    // Depósito
     @PostMapping("/deposit")
     public ResponseEntity<Transaction> deposit(@Valid @RequestBody AmountDTO dto) {
         Transaction tx = transactionService.deposit(
@@ -46,7 +44,6 @@ public class TransactionController {
         return ResponseEntity.created(URI.create("/api/v1/transactions/" + tx.getId())).body(tx);
     }
 
-    // Saque
     @PostMapping("/withdraw")
     public ResponseEntity<Transaction> withdraw(@Valid @RequestBody AmountDTO dto) {
         Transaction tx = transactionService.withdraw(
@@ -66,6 +63,4 @@ public class TransactionController {
         List<Transaction> transactions = transactionService.getTransactions(accountId, startDate, endDate);
         return ResponseEntity.ok(transactions);
     }
-
-
 }

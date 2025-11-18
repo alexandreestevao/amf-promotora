@@ -1,5 +1,6 @@
 package com.amf.promotora.service;
 
+import com.amf.promotora.enums.TransactionType;
 import com.amf.promotora.exception.BusinessException;
 import com.amf.promotora.model.Account;
 import com.amf.promotora.model.Transaction;
@@ -23,7 +24,6 @@ public class TransactionService {
         this.transactionRepository = transactionRepository;
     }
 
-    // Transferência entre contas
     public Transaction transfer(String fromAccountId, String toAccountId, BigDecimal amount, String performedBy) {
         if (fromAccountId.equals(toAccountId)) {
             throw new BusinessException("Transferência entre a mesma conta não é permitida");
@@ -44,18 +44,19 @@ public class TransactionService {
         accountRepository.save(from);
         accountRepository.save(to);
 
-        Transaction tx = new Transaction();
-        tx.setFromAccountId(fromAccountId);
-        tx.setToAccountId(toAccountId);
-        tx.setAmount(amount);
-        tx.setType("TRANSFER");
-        tx.setCreatedAt(Instant.now());
-        tx.setPerformedBy(performedBy);
+        Transaction tx = Transaction.builder()
+                .fromAccountId(fromAccountId)
+                .toAccountId(toAccountId)
+                .amount(amount)
+                .type(TransactionType.TRANSFER)
+                .createdAt(Instant.now())
+                .performedBy(performedBy)
+                .build();
+
 
         return transactionRepository.save(tx);
     }
 
-    // Depósito
     public Transaction deposit(String accountId, BigDecimal amount, String performedBy) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new BusinessException("Conta não encontrada"));
@@ -63,18 +64,18 @@ public class TransactionService {
         account.setBalance(account.getBalance().add(amount));
         accountRepository.save(account);
 
-        Transaction tx = new Transaction();
-        tx.setFromAccountId(null);
-        tx.setToAccountId(accountId);
-        tx.setAmount(amount);
-        tx.setType("DEPOSIT");
-        tx.setCreatedAt(Instant.now());
-        tx.setPerformedBy(performedBy);
+        Transaction tx = Transaction.builder()
+                .fromAccountId(null)
+                .toAccountId(accountId)
+                .amount(amount)
+                .type(TransactionType.DEPOSIT)
+                .createdAt(Instant.now())
+                .performedBy(performedBy)
+                .build();
 
         return transactionRepository.save(tx);
     }
 
-    // Saque
     public Transaction withdraw(String accountId, BigDecimal amount, String performedBy) {
         Account account = accountRepository.findById(accountId)
                 .orElseThrow(() -> new BusinessException("Conta não encontrada"));
@@ -86,13 +87,14 @@ public class TransactionService {
         account.setBalance(account.getBalance().subtract(amount));
         accountRepository.save(account);
 
-        Transaction tx = new Transaction();
-        tx.setFromAccountId(accountId);
-        tx.setToAccountId(null);
-        tx.setAmount(amount);
-        tx.setType("WITHDRAW");
-        tx.setCreatedAt(Instant.now());
-        tx.setPerformedBy(performedBy);
+        Transaction tx = Transaction.builder()
+                .fromAccountId(accountId)
+                .toAccountId(null)
+                .amount(amount)
+                .type(TransactionType.WITHDRAW)
+                .createdAt(Instant.now())
+                .performedBy(performedBy)
+                .build();
 
         return transactionRepository.save(tx);
     }
@@ -114,5 +116,4 @@ public class TransactionService {
             return transactionRepository.findByAccountId(accountId);
         }
     }
-
 }
