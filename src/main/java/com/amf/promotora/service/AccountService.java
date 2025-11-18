@@ -3,11 +3,14 @@ package com.amf.promotora.service;
 import com.amf.promotora.dto.AccountDTO;
 import com.amf.promotora.exception.BusinessException;
 import com.amf.promotora.model.Account;
+import com.amf.promotora.model.Transaction;
 import com.amf.promotora.repository.AccountRepository;
 import com.amf.promotora.repository.ClientRepository;
+import com.amf.promotora.repository.TransactionRepository;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.UUID;
 
 @Service
@@ -15,10 +18,12 @@ public class AccountService {
 
     private final AccountRepository accountRepository;
     private final ClientRepository clientRepository;
+    private final TransactionRepository transactionRepository;
 
-    public AccountService(AccountRepository accountRepository, ClientRepository clientRepository) {
+    public AccountService(AccountRepository accountRepository, ClientRepository clientRepository, TransactionRepository transactionRepository) {
         this.accountRepository = accountRepository;
         this.clientRepository = clientRepository;
+        this.transactionRepository = transactionRepository;
     }
 
     public Account create(AccountDTO dto) {
@@ -42,4 +47,7 @@ public class AccountService {
     private String generateAccountNumber() {
         return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 10);
     }
+
+
+
 }
