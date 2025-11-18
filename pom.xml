@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.amf</groupId>
     <artifactId>promotora</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>amf-promotora</name>
-    <description>API - AMF Promotora (Spring Boot + MongoDB)</description>
+    <description>API - AMF Promotora (Spring Boot + MongoDB + Vaadin 24)</description>
 
     <parent>
         <groupId>org.springframework.boot</groupId>
@@ -20,8 +20,20 @@
 
     <properties>
         <java.version>17</java.version>
-        <spring.boot.version>3.2.8</spring.boot.version>
+        <vaadin.version>24.4.5</vaadin.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.vaadin</groupId>
+                <artifactId>vaadin-bom</artifactId>
+                <version>${vaadin.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <dependencies>
 
@@ -29,7 +41,6 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
         </dependency>
-
 
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -83,6 +94,14 @@
             <artifactId>mockito-junit-jupiter</artifactId>
             <scope>test</scope>
         </dependency>
+
+        <dependency>
+            <groupId>com.vaadin</groupId>
+            <artifactId>vaadin-spring-boot-starter</artifactId>
+            <version>${vaadin.version}</version>
+        </dependency>
+
+
     </dependencies>
 
     <build>
@@ -102,4 +121,5 @@
             </plugin>
         </plugins>
     </build>
+
 </project>

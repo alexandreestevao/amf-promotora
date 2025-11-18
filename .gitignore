@@ -34,6 +34,7 @@ Thumbs.db
 
 ## Node (caso use no frontend)
 node_modules/
+frontend/generated/
 
 ## Backup files
 *.bak

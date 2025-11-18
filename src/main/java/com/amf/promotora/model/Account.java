@@ -19,5 +19,7 @@ public class Account {
     private String clientId;
     private String number;
     private String type;
+
+    @Builder.Default
     private BigDecimal balance = BigDecimal.ZERO;
 }
