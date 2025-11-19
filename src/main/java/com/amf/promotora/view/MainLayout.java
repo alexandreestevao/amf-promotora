@@ -1,9 +1,7 @@
 package com.amf.promotora.view;
 
 import com.vaadin.flow.component.applayout.AppLayout;
-import com.vaadin.flow.component.dependency.CssImport;
 import com.vaadin.flow.component.html.H1;
-import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.sidenav.SideNav;
 import com.vaadin.flow.component.sidenav.SideNavItem;
@@ -17,7 +15,6 @@ public class MainLayout extends AppLayout implements RouterLayout {
         createSidebar();
     }
 
-    // ----- HEADER -----
     private void createHeader() {
         H1 title = new H1("AMF Promotora - Dashboard");
         title.addClassNames(
@@ -28,7 +25,6 @@ public class MainLayout extends AppLayout implements RouterLayout {
         addToNavbar(title);
     }
 
-    // ----- SIDEBAR -----
     private void createSidebar() {
         SideNav nav = new SideNav();
 

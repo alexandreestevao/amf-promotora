@@ -1,7 +1,7 @@
-spring:
-  application:
-    name: amf-promotora
+  spring:
+    application:
+      name: amf-promotora
 
-  data:
-    mongodb:
-      uri: mongodb://admin:admin123@localhost:27017/amfdb?authSource=admin
+    data:
+      mongodb:
+        uri: mongodb://admin:admin123@localhost:27017/amfdb?authSource=admin

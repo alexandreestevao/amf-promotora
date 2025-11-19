@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.*;
 
 import jakarta.validation.Valid;
 import java.net.URI;
+import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 
 @RestController
@@ -85,7 +87,17 @@ public class TransactionController {
             @RequestParam(required = false) String startDate,
             @RequestParam(required = false) String endDate) {
 
-        List<Transaction> transactions = transactionService.getTransactions(accountId, startDate, endDate);
+        Instant start = null;
+        Instant end = null;
+
+        try {
+            if (startDate != null) start = Instant.parse(startDate);
+            if (endDate != null) end = Instant.parse(endDate);
+        } catch (DateTimeParseException e) {
+            throw new IllegalArgumentException("Formato de data inválido. Use ISO 8601 (ex: 2025-11-18T00:00:00Z)");
+        }
+
+        List<Transaction> transactions = transactionService.getTransactions(accountId, start, end);
         return ResponseEntity.ok(transactions);
     }
 }

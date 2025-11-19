@@ -1,8 +1,5 @@
 package com.amf.promotora.view;
 
-import com.amf.promotora.model.Account;
-import com.amf.promotora.model.Client;
-import com.amf.promotora.model.Transaction;
 import com.amf.promotora.repository.AccountRepository;
 import com.amf.promotora.repository.ClientRepository;
 import com.amf.promotora.repository.TransactionRepository;

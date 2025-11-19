@@ -901,6 +901,7 @@ import { GridFlowSelectionColumn } from "./vaadin-grid-flow-selection-column.js"
           if ((typeof mode === 'string' || mode instanceof String) && validSelectionModes.indexOf(mode) >= 0) {
             selectionMode = mode;
             selectedKeys = {};
+            grid.selectedItems = [];
             grid.$connector.updateMultiSelectable();
           } else {
             throw 'Attempted to set an invalid selection mode';
@@ -1130,9 +1131,14 @@ import { GridFlowSelectionColumn } from "./vaadin-grid-flow-selection-column.js"
             return;
           }
 
-          const target = event.target;
+          const path = event.composedPath();
+          const idx = path.findIndex((node) => node.localName === 'td' || node.localName === 'th');
+          const content = path.slice(0, idx);
 
-          if (isFocusable(target) || target instanceof HTMLLabelElement) {
+          // Do not fire item click event if cell content contains focusable elements.
+          // Use this instead of event.target to detect cases like icon inside button.
+          // See https://github.com/vaadin/flow-components/issues/4065
+          if (content.some((node) => isFocusable(node) || node instanceof HTMLLabelElement)) {
             return;
           }
 

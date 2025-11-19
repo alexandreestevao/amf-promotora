@@ -1,4 +1,4 @@
-import 'Frontend/generated/jar-resources/copilot/copilot.js';
+import 'Frontend/generated/jar-resources/copilot.js';
 // @ts-ignore
 if (import.meta.hot) {
   // @ts-ignore
@@ -13,6 +13,7 @@ if (import.meta.hot) {
 import '@vaadin/vertical-layout/theme/lumo/vaadin-vertical-layout.js';
 import '@vaadin/horizontal-layout/theme/lumo/vaadin-horizontal-layout.js';
 import '@vaadin/context-menu/theme/lumo/vaadin-context-menu.js';
+import '@vaadin/checkbox/theme/lumo/vaadin-checkbox.js';
 import '@vaadin/text-field/theme/lumo/vaadin-text-field.js';
 import '@vaadin/text-area/theme/lumo/vaadin-text-area.js';
 import '@vaadin/menu-bar/theme/lumo/vaadin-menu-bar.js';
@@ -25,6 +26,7 @@ import '@vaadin/list-box/theme/lumo/vaadin-list-box.js';
 import '@vaadin/combo-box/theme/lumo/vaadin-combo-box.js';
 import '@vaadin/item/theme/lumo/vaadin-item.js';
 import '@vaadin/dialog/theme/lumo/vaadin-dialog.js';
+import '@vaadin/multi-select-combo-box/theme/lumo/vaadin-multi-select-combo-box.js';
 import '@vaadin/icons/vaadin-iconset.js';
 import '@vaadin/icon/vaadin-icon.js';
 import './vaadin-featureflags.js';

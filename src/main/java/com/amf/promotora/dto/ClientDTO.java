@@ -9,7 +9,7 @@ import jakarta.validation.constraints.Past;
 import java.time.LocalDate;
 
 @Data
-@Schema(description = "DTO para cadastro de cliente")
+@Schema(description = "DTO para cadastro de clientes")
 public class ClientDTO {
 
     @NotBlank
@@ -18,10 +18,11 @@ public class ClientDTO {
     private String fullName;
 
     @NotBlank
-    @Schema(description = "CPF do cliente (único)", example = "123.456.789-00")
+    @Schema(description = "CPF do cliente", example = "123.456.789-00")
     private String cpf;
 
     @Past
-    @Schema(description = "Data de nascimento do cliente", example = "1980-01-01")
+    @Schema(description = "Data de nascimento do cliente no formato YYYY-MM-DD",
+            example = "1980-05-20")
     private LocalDate birthDate;
 }

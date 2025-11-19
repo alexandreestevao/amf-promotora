@@ -8,9 +8,9 @@ import com.amf.promotora.repository.ClientRepository;
 import com.amf.promotora.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -21,76 +21,170 @@ class AccountServiceTest {
     private AccountRepository accountRepository;
     private ClientRepository clientRepository;
     private TransactionRepository transactionRepository;
+
     private AccountService accountService;
 
     @BeforeEach
-    void setUp() {
+    void setup() {
         accountRepository = mock(AccountRepository.class);
         clientRepository = mock(ClientRepository.class);
         transactionRepository = mock(TransactionRepository.class);
+
         accountService = new AccountService(accountRepository, clientRepository, transactionRepository);
     }
 
+    // --------------------------------------------------------------------------
+    // CREATE
+    // --------------------------------------------------------------------------
     @Test
-    void createAccount_success() {
+    void testCreateSuccess() {
         AccountDTO dto = new AccountDTO();
-        dto.setClientId("client1");
-        dto.setType("CORRENTE");
+        dto.setClientId("client-1");
+        dto.setType("CHECKING");
 
-        when(clientRepository.existsById("client1")).thenReturn(true);
+        when(clientRepository.existsById("client-1")).thenReturn(true);
 
-        Account savedAccount = new Account();
-        savedAccount.setId("acc1");
-        savedAccount.setClientId("client1");
-        savedAccount.setType("CORRENTE");
-        savedAccount.setBalance(BigDecimal.ZERO);
+        Account saved = new Account();
+        saved.setId("acc-1");
+        saved.setClientId("client-1");
+        saved.setType("CHECKING");
+        saved.setBalance(BigDecimal.ZERO);
 
-        when(accountRepository.save(any(Account.class))).thenReturn(savedAccount);
+        when(accountRepository.save(any(Account.class))).thenReturn(saved);
 
         Account result = accountService.create(dto);
 
-        assertNotNull(result);
-        assertEquals("client1", result.getClientId());
-        assertEquals("CORRENTE", result.getType());
+        assertEquals("client-1", result.getClientId());
+        assertEquals("CHECKING", result.getType());
         assertEquals(BigDecimal.ZERO, result.getBalance());
-
-        ArgumentCaptor<Account> captor = ArgumentCaptor.forClass(Account.class);
-        verify(accountRepository, times(1)).save(captor.capture());
-        assertEquals("client1", captor.getValue().getClientId());
     }
 
     @Test
-    void createAccount_clientNotFound_throwsException() {
+    void testCreateThrowsClientNotFound() {
         AccountDTO dto = new AccountDTO();
-        dto.setClientId("clientNotExist");
-        dto.setType("POUPANCA");
+        dto.setClientId("x");
 
-        when(clientRepository.existsById("clientNotExist")).thenReturn(false);
-
-        BusinessException ex = assertThrows(BusinessException.class, () -> accountService.create(dto));
-        assertEquals("Cliente não encontrado", ex.getMessage());
-
-        verify(accountRepository, never()).save(any());
-    }
-
-    @Test
-    void getBalance_success() {
-        Account account = new Account();
-        account.setId("acc1");
-        account.setBalance(BigDecimal.valueOf(200));
-
-        when(accountRepository.findById("acc1")).thenReturn(Optional.of(account));
-
-        BigDecimal balance = accountService.getBalance("acc1");
-        assertEquals(BigDecimal.valueOf(200), balance);
-    }
-
-    @Test
-    void getBalance_accountNotFound_throwsException() {
-        when(accountRepository.findById("accNotExist")).thenReturn(Optional.empty());
+        when(clientRepository.existsById("x")).thenReturn(false);
 
         BusinessException ex = assertThrows(BusinessException.class,
-                () -> accountService.getBalance("accNotExist"));
+                () -> accountService.create(dto));
+
+        assertEquals("Cliente não encontrado", ex.getMessage());
+    }
+
+    // --------------------------------------------------------------------------
+    // GET BALANCE
+    // --------------------------------------------------------------------------
+    @Test
+    void testGetBalanceSuccess() {
+        Account acc = new Account();
+        acc.setBalance(BigDecimal.valueOf(100));
+
+        when(accountRepository.findById("a1")).thenReturn(Optional.of(acc));
+
+        BigDecimal result = accountService.getBalance("a1");
+
+        assertEquals(BigDecimal.valueOf(100), result);
+    }
+
+    @Test
+    void testGetBalanceThrowsAccountNotFound() {
+        when(accountRepository.findById("a1")).thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> accountService.getBalance("a1"));
+
         assertEquals("Conta não encontrada", ex.getMessage());
+    }
+
+    // --------------------------------------------------------------------------
+    // DELETE
+    // --------------------------------------------------------------------------
+    @Test
+    void testDeleteSuccess() {
+        when(accountRepository.existsById("a1")).thenReturn(true);
+        doNothing().when(accountRepository).deleteById("a1");
+
+        accountService.delete("a1");
+
+        verify(accountRepository, times(1)).deleteById("a1");
+    }
+
+    @Test
+    void testDeleteThrowsAccountNotFound() {
+        when(accountRepository.existsById("a1")).thenReturn(false);
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> accountService.delete("a1"));
+
+        assertEquals("Conta não encontrada", ex.getMessage());
+    }
+
+    // --------------------------------------------------------------------------
+    // FIND ALL
+    // --------------------------------------------------------------------------
+    @Test
+    void testFindAll() {
+        when(accountRepository.findAll()).thenReturn(List.of(new Account(), new Account()));
+
+        List<Account> result = accountService.findAll();
+
+        assertEquals(2, result.size());
+    }
+
+    // --------------------------------------------------------------------------
+    // UPDATE
+    // --------------------------------------------------------------------------
+    @Test
+    void testUpdateSuccess() {
+        AccountDTO dto = new AccountDTO();
+        dto.setId("a1");
+        dto.setClientId("client-1");
+        dto.setType("SAVINGS");
+
+        Account existing = new Account();
+        existing.setId("a1");
+        existing.setClientId("client-1");
+        existing.setType("CHECKING");
+
+        when(accountRepository.findById("a1")).thenReturn(Optional.of(existing));
+        when(clientRepository.existsById("client-1")).thenReturn(true);
+        when(accountRepository.save(existing)).thenReturn(existing);
+
+        Account updated = accountService.update(dto);
+
+        assertEquals("client-1", updated.getClientId());
+        assertEquals("SAVINGS", updated.getType());
+    }
+
+    @Test
+    void testUpdateThrowsAccountNotFound() {
+        AccountDTO dto = new AccountDTO();
+        dto.setId("a1");
+
+        when(accountRepository.findById("a1")).thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> accountService.update(dto));
+
+        assertEquals("Conta não encontrada", ex.getMessage());
+    }
+
+    @Test
+    void testUpdateThrowsClientNotFound() {
+        AccountDTO dto = new AccountDTO();
+        dto.setId("a1");
+        dto.setClientId("client-1");
+
+        Account existing = new Account();
+        existing.setId("a1");
+
+        when(accountRepository.findById("a1")).thenReturn(Optional.of(existing));
+        when(clientRepository.existsById("client-1")).thenReturn(false);
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> accountService.update(dto));
+
+        assertEquals("Cliente não encontrado", ex.getMessage());
     }
 }

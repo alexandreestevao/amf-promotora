@@ -5,7 +5,6 @@ import com.amf.promotora.model.Client;
 import com.amf.promotora.service.ClientService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -44,7 +43,7 @@ class ClientControllerTest {
         ClientDTO dto = new ClientDTO();
         dto.setFullName("Alexandre Estevão");
         dto.setCpf("12345678901");
-        client.setBirthDate(LocalDate.parse("1980-01-01"));
+        dto.setBirthDate(LocalDate.parse("1980-01-01"));
 
         mockMvc.perform(post("/api/v1/clients")
                         .contentType(MediaType.APPLICATION_JSON)

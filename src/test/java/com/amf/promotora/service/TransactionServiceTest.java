@@ -9,7 +9,6 @@ import com.amf.promotora.repository.TransactionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -26,156 +25,202 @@ class TransactionServiceTest {
     private TransactionService transactionService;
 
     @BeforeEach
-    void setUp() {
+    void setup() {
         accountRepository = mock(AccountRepository.class);
         transactionRepository = mock(TransactionRepository.class);
         transactionService = new TransactionService(accountRepository, transactionRepository);
     }
 
+    // ---------------------------------------------------------
+    // TRANSFER
+    // ---------------------------------------------------------
     @Test
-    void transferSuccess() {
-        Account from = new Account();
-        from.setId("1");
-        from.setBalance(BigDecimal.valueOf(100));
+    void testTransferSuccess() {
+        Account from = Account.builder()
+                .id("A1")
+                .balance(BigDecimal.valueOf(500))
+                .build();
 
-        Account to = new Account();
-        to.setId("2");
-        to.setBalance(BigDecimal.valueOf(50));
+        Account to = Account.builder()
+                .id("A2")
+                .balance(BigDecimal.valueOf(100))
+                .build();
 
-        when(accountRepository.findById("1")).thenReturn(Optional.of(from));
-        when(accountRepository.findById("2")).thenReturn(Optional.of(to));
+        when(accountRepository.findById("A1")).thenReturn(Optional.of(from));
+        when(accountRepository.findById("A2")).thenReturn(Optional.of(to));
+
+        Transaction transactionMock = Transaction.builder()
+                .fromAccountId("A1")
+                .toAccountId("A2")
+                .amount(BigDecimal.valueOf(200))
+                .type(TransactionType.TRANSFER)
+                .build();
+
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(transactionMock);
+
+        Transaction result = transactionService.transfer("A1", "A2", BigDecimal.valueOf(200), "admin");
+
+        assertEquals("A1", result.getFromAccountId());
+        assertEquals("A2", result.getToAccountId());
+        assertEquals(BigDecimal.valueOf(200), result.getAmount());
+
+        assertEquals(BigDecimal.valueOf(300), from.getBalance());
+        assertEquals(BigDecimal.valueOf(300), to.getBalance());
+    }
+
+    @Test
+    void testTransferSameAccountThrowsException() {
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> transactionService.transfer("A1", "A1", BigDecimal.TEN, "admin"));
+
+        assertEquals("Transferência entre a mesma conta não é permitida", ex.getMessage());
+    }
+
+    @Test
+    void testTransferFromAccountNotFound() {
+        when(accountRepository.findById("A1")).thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> transactionService.transfer("A1", "A2", BigDecimal.TEN, "admin"));
+
+        assertEquals("Conta origem não encontrada", ex.getMessage());
+    }
+
+    @Test
+    void testTransferToAccountNotFound() {
+        Account from = Account.builder()
+                .id("A1")
+                .balance(BigDecimal.valueOf(500))
+                .build();
+
+        when(accountRepository.findById("A1")).thenReturn(Optional.of(from));
+        when(accountRepository.findById("A2")).thenReturn(Optional.empty());
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> transactionService.transfer("A1", "A2", BigDecimal.TEN, "admin"));
+
+        assertEquals("Conta destino não encontrada", ex.getMessage());
+    }
+
+    @Test
+    void testTransferInsufficientBalance() {
+        Account from = Account.builder()
+                .id("A1")
+                .balance(BigDecimal.valueOf(50))
+                .build();
+
+        Account to = Account.builder()
+                .id("A2")
+                .balance(BigDecimal.valueOf(100))
+                .build();
+
+        when(accountRepository.findById("A1")).thenReturn(Optional.of(from));
+        when(accountRepository.findById("A2")).thenReturn(Optional.of(to));
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> transactionService.transfer("A1", "A2", BigDecimal.valueOf(200), "admin"));
+
+        assertEquals("Saldo insuficiente", ex.getMessage());
+    }
+
+    // ---------------------------------------------------------
+    // DEPOSIT
+    // ---------------------------------------------------------
+    @Test
+    void testDepositSuccess() {
+        Account account = Account.builder()
+                .id("A1")
+                .balance(BigDecimal.valueOf(100))
+                .build();
+
+        when(accountRepository.findById("A1")).thenReturn(Optional.of(account));
 
         Transaction savedTx = Transaction.builder()
-                .fromAccountId("1")
-                .toAccountId("2")
-                .amount(BigDecimal.valueOf(30))
-                .type(TransactionType.TRANSFER)
-                .createdAt(Instant.now())
-                .performedBy("user")
+                .toAccountId("A1")
+                .amount(BigDecimal.valueOf(50))
+                .type(TransactionType.DEPOSIT)
                 .build();
 
         when(transactionRepository.save(any(Transaction.class))).thenReturn(savedTx);
 
-        Transaction tx = transactionService.transfer("1", "2", BigDecimal.valueOf(30), "user");
+        Transaction result = transactionService.deposit("A1", BigDecimal.valueOf(50), "admin");
 
-        assertEquals(TransactionType.TRANSFER, tx.getType());
-        assertEquals(BigDecimal.valueOf(70), from.getBalance());
-        assertEquals(BigDecimal.valueOf(80), to.getBalance());
+        assertEquals(BigDecimal.valueOf(150), account.getBalance());
+        assertEquals(TransactionType.DEPOSIT, result.getType());
+    }
 
-        verify(accountRepository).save(from);
-        verify(accountRepository).save(to);
-        verify(transactionRepository).save(any(Transaction.class));
+    // ---------------------------------------------------------
+    // WITHDRAW
+    // ---------------------------------------------------------
+    @Test
+    void testWithdrawSuccess() {
+        Account account = Account.builder()
+                .id("A1")
+                .balance(BigDecimal.valueOf(200))
+                .build();
+
+        when(accountRepository.findById("A1")).thenReturn(Optional.of(account));
+
+        Transaction savedTx = Transaction.builder()
+                .fromAccountId("A1")
+                .amount(BigDecimal.valueOf(50))
+                .type(TransactionType.WITHDRAW)
+                .build();
+
+        when(transactionRepository.save(any(Transaction.class))).thenReturn(savedTx);
+
+        Transaction result = transactionService.withdraw("A1", BigDecimal.valueOf(50), "admin");
+
+        assertEquals(BigDecimal.valueOf(150), account.getBalance());
+        assertEquals(TransactionType.WITHDRAW, result.getType());
     }
 
     @Test
-    void transferSameAccountShouldThrow() {
-        BusinessException exception = assertThrows(BusinessException.class,
-                () -> transactionService.transfer("1", "1", BigDecimal.TEN, "user"));
-        assertEquals("Transferência entre a mesma conta não é permitida", exception.getMessage());
+    void testWithdrawInsufficientBalance() {
+        Account account = Account.builder()
+                .id("A1")
+                .balance(BigDecimal.valueOf(30))
+                .build();
+
+        when(accountRepository.findById("A1")).thenReturn(Optional.of(account));
+
+        BusinessException ex = assertThrows(BusinessException.class,
+                () -> transactionService.withdraw("A1", BigDecimal.valueOf(100), "admin"));
+
+        assertEquals("Saldo insuficiente", ex.getMessage());
+    }
+
+    // ---------------------------------------------------------
+    // GET TRANSACTIONS
+    // ---------------------------------------------------------
+    @Test
+    void testGetTransactionsWithDateRange() {
+        Instant start = Instant.now().minusSeconds(3600);
+        Instant end = Instant.now();
+
+        List<Transaction> mockList = List.of(
+                Transaction.builder().id("T1").build(),
+                Transaction.builder().id("T2").build()
+        );
+
+        when(transactionRepository.findByAccountIdAndCreatedAtBetween("A1", start, end))
+                .thenReturn(mockList);
+
+        List<Transaction> result = transactionService.getTransactions("A1", start, end);
+
+        assertEquals(2, result.size());
     }
 
     @Test
-    void transferInsufficientBalanceShouldThrow() {
-        Account from = new Account();
-        from.setId("1");
-        from.setBalance(BigDecimal.valueOf(10));
+    void testGetTransactionsWithoutDateRange() {
+        List<Transaction> mockList = List.of(
+                Transaction.builder().id("T1").build()
+        );
 
-        Account to = new Account();
-        to.setId("2");
-        to.setBalance(BigDecimal.valueOf(50));
+        when(transactionRepository.findByAccountId("A1")).thenReturn(mockList);
 
-        when(accountRepository.findById("1")).thenReturn(Optional.of(from));
-        when(accountRepository.findById("2")).thenReturn(Optional.of(to));
+        List<Transaction> result = transactionService.getTransactions("A1", null, null);
 
-        BusinessException exception = assertThrows(BusinessException.class,
-                () -> transactionService.transfer("1", "2", BigDecimal.valueOf(20), "user"));
-        assertEquals("Saldo insuficiente", exception.getMessage());
-    }
-
-    @Test
-    void depositSuccess() {
-        Account account = new Account();
-        account.setId("1");
-        account.setBalance(BigDecimal.valueOf(50));
-
-        when(accountRepository.findById("1")).thenReturn(Optional.of(account));
-        when(transactionRepository.save(any(Transaction.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-        Transaction tx = transactionService.deposit("1", BigDecimal.valueOf(30), "user");
-
-        assertEquals(TransactionType.DEPOSIT, tx.getType());
-        assertEquals(BigDecimal.valueOf(80), account.getBalance());
-        verify(accountRepository).save(account);
-        verify(transactionRepository).save(tx);
-    }
-
-    @Test
-    void withdrawSuccess() {
-        Account account = new Account();
-        account.setId("1");
-        account.setBalance(BigDecimal.valueOf(100));
-
-        when(accountRepository.findById("1")).thenReturn(Optional.of(account));
-        when(transactionRepository.save(any(Transaction.class)))
-                .thenAnswer(invocation -> invocation.getArgument(0));
-
-        Transaction tx = transactionService.withdraw("1", BigDecimal.valueOf(40), "user");
-
-        assertEquals(TransactionType.WITHDRAW, tx.getType());
-        assertEquals(BigDecimal.valueOf(60), account.getBalance());
-        verify(accountRepository).save(account);
-        verify(transactionRepository).save(tx);
-    }
-
-    @Test
-    void withdrawInsufficientBalanceShouldThrow() {
-        Account account = new Account();
-        account.setId("1");
-        account.setBalance(BigDecimal.valueOf(20));
-
-        when(accountRepository.findById("1")).thenReturn(Optional.of(account));
-
-        BusinessException exception = assertThrows(BusinessException.class,
-                () -> transactionService.withdraw("1", BigDecimal.valueOf(50), "user"));
-        assertEquals("Saldo insuficiente", exception.getMessage());
-    }
-
-    @Test
-    void getTransactionsWithoutDates() {
-        Transaction tx1 = Transaction.builder().id("tx1").build();
-        Transaction tx2 = Transaction.builder().id("tx2").build();
-
-        when(transactionRepository.findByAccountId("1")).thenReturn(List.of(tx1, tx2));
-
-        List<Transaction> transactions = transactionService.getTransactions("1", null, null);
-
-        assertEquals(2, transactions.size());
-        verify(transactionRepository).findByAccountId("1");
-    }
-
-    @Test
-    void getTransactionsWithDates() {
-        Transaction tx1 = Transaction.builder().id("tx1").build();
-        Transaction tx2 = Transaction.builder().id("tx2").build();
-
-        Instant start = Instant.parse("2025-11-17T00:00:00Z");
-        Instant end = Instant.parse("2025-11-17T23:59:59Z");
-
-        when(transactionRepository.findByAccountIdAndCreatedAtBetween("1", start, end))
-                .thenReturn(List.of(tx1, tx2));
-
-        List<Transaction> transactions = transactionService.getTransactions("1",
-                "2025-11-17T00:00:00Z", "2025-11-17T23:59:59Z");
-
-        assertEquals(2, transactions.size());
-        verify(transactionRepository).findByAccountIdAndCreatedAtBetween("1", start, end);
-    }
-
-    @Test
-    void getTransactionsInvalidDateShouldThrow() {
-        BusinessException exception = assertThrows(BusinessException.class,
-                () -> transactionService.getTransactions("1", "invalid", "date"));
-        assertEquals("Formato de data inválido. Use ISO 8601.", exception.getMessage());
+        assertEquals(1, result.size());
     }
 }

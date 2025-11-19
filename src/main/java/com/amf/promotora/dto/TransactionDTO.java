@@ -13,19 +13,22 @@ import java.math.BigDecimal;
 public class TransactionDTO {
 
     @NotBlank
-    @Schema(description = "ID da conta origem", example = "acc123")
+    @Schema(description = "ID da conta de origem",
+            example = "acc001")
     private String fromAccountId;
 
     @NotBlank
-    @Schema(description = "ID da conta destino", example = "acc456")
+    @Schema(description = "ID da conta de destino",
+            example = "acc002")
     private String toAccountId;
 
     @NotNull
     @Positive
-    @Schema(description = "Valor da transação", example = "100.50")
+    @Schema(description = "Valor da transferência", example = "250.00")
     private BigDecimal amount;
 
     @NotBlank
-    @Schema(description = "Nome de quem realizou a transação", example = "alexandre")
+    @Schema(description = "Usuário que executou a transferência",
+            example = "alexandre")
     private String performedBy;
 }

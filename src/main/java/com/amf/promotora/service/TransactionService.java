@@ -99,21 +99,12 @@ public class TransactionService {
         return transactionRepository.save(tx);
     }
 
-    public List<Transaction> getTransactions(String accountId, String startDate, String endDate) {
-        Instant start = null;
-        Instant end = null;
-
-        try {
-            if (startDate != null) start = Instant.parse(startDate);
-            if (endDate != null) end = Instant.parse(endDate);
-        } catch (DateTimeParseException e) {
-            throw new BusinessException("Formato de data inválido. Use ISO 8601.");
-        }
-
+    public List<Transaction> getTransactions(String accountId, Instant start, Instant end) {
         if (start != null && end != null) {
             return transactionRepository.findByAccountIdAndCreatedAtBetween(accountId, start, end);
         } else {
             return transactionRepository.findByAccountId(accountId);
         }
     }
+
 }
