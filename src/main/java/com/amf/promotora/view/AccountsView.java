@@ -21,8 +21,6 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.PostConstruct;
 
-import java.util.List;
-
 @Route(value = "accounts", layout = MainLayout.class)
 @PageTitle("Contas | AMF Promotora")
 public class AccountsView extends VerticalLayout {
@@ -30,14 +28,14 @@ public class AccountsView extends VerticalLayout {
     private final AccountService accountService;
     private final ClientService clientService;
 
-    private Grid<Account> grid = new Grid<>(Account.class, false);
+    final private Grid<Account> grid = new Grid<>(Account.class, false);
     private Dialog formDialog;
 
-    private ComboBox<Client> clientField = new ComboBox<>("Cliente");
-    private ComboBox<String> typeField = new ComboBox<>("Tipo");
+    final private ComboBox<Client> clientField = new ComboBox<>("Cliente");
+    final private ComboBox<String> typeField = new ComboBox<>("Tipo");
 
-    private Button saveButton = new Button("Salvar");
-    private Button cancelButton = new Button("Cancelar");
+    final private Button saveButton = new Button("Salvar");
+    final private Button cancelButton = new Button("Cancelar");
 
     private Account currentAccount;
 
@@ -112,7 +110,6 @@ public class AccountsView extends VerticalLayout {
             formDialog.add(form, actions);
         }
 
-        // preencher campos no modo edição
         if (account.getClientId() != null) {
             clientService.findByIdOptional(account.getClientId())
                     .ifPresent(clientField::setValue);
@@ -137,10 +134,8 @@ public class AccountsView extends VerticalLayout {
         dto.setType(typeField.getValue());
 
         if (currentAccount.getId() == null) {
-            // CREATE
             accountService.create(dto);
         } else {
-            // UPDATE
             dto.setId(currentAccount.getId());
             accountService.update(dto);
         }

@@ -67,7 +67,6 @@ public class AccountService {
         return accountRepository.save(existing);
     }
 
-
     private String generateAccountNumber() {
         return UUID.randomUUID().toString().replaceAll("-", "").substring(0, 10);
     }

@@ -20,7 +20,6 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.data.binder.ValidationResult;
 import com.vaadin.flow.data.binder.Validator;
-import com.vaadin.flow.data.renderer.LocalDateRenderer;
 import com.vaadin.flow.data.value.ValueChangeMode;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
@@ -34,18 +33,18 @@ public class ClientsView extends VerticalLayout {
 
     private final ClientService clientService;
 
-    private Grid<Client> grid = new Grid<>(Client.class, false);
+    final private Grid<Client> grid = new Grid<>(Client.class, false);
     private Dialog formDialog;
 
-    private TextField fullNameField = new TextField("Nome Completo");
-    private TextField cpfField = new TextField("CPF");
-    private DatePicker birthDateField = new DatePicker("Data de Nascimento");
+    final private TextField fullNameField = new TextField("Nome Completo");
+    final private TextField cpfField = new TextField("CPF");
+    final private DatePicker birthDateField = new DatePicker("Data de Nascimento");
 
-    private Button saveButton = new Button("Salvar");
-    private Button cancelButton = new Button("Cancelar");
+    final private Button saveButton = new Button("Salvar");
+    final private Button cancelButton = new Button("Cancelar");
 
     private Client currentClient;
-    private Binder<Client> binder = new Binder<>(Client.class);
+    final private Binder<Client> binder = new Binder<>(Client.class);
 
     public ClientsView(ClientService clientService) {
         this.clientService = clientService;
@@ -96,12 +95,10 @@ public class ClientsView extends VerticalLayout {
     }
 
     private void configureBinder() {
-        // Nome completo obrigatório
         binder.forField(fullNameField)
                 .asRequired("Nome é obrigatório")
                 .bind(Client::getFullName, Client::setFullName);
 
-        // CPF obrigatório e válido
         binder.forField(cpfField)
                 .asRequired("CPF é obrigatório")
                 .withValidator((Validator<String>) (value, context) -> {
@@ -113,12 +110,10 @@ public class ClientsView extends VerticalLayout {
                 })
                 .bind(Client::getCpf, Client::setCpf);
 
-        // Data de nascimento obrigatória
         binder.forField(birthDateField)
                 .asRequired("Data de nascimento é obrigatória")
                 .bind(Client::getBirthDate, Client::setBirthDate);
 
-        // Máscara CPF enquanto digita
         cpfField.setValueChangeMode(ValueChangeMode.EAGER);
         cpfField.addValueChangeListener(e -> {
             String value = e.getValue().replaceAll("\\D", "");
